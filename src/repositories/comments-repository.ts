@@ -16,7 +16,7 @@ export class CommentsRepository {
         const pageNumber = sortData.pageNumber ?? 1
 
         let filter = {
-            postId: postId
+            id: postId
         }
 
         // if (searchNameTerm) {
@@ -29,14 +29,14 @@ export class CommentsRepository {
         // }
         // const filter = {id: id}
 
-        const comments: any = await commentsCollection.find({postId: postId})
+        const comments: any = await commentsCollection.find({id: postId})
             .sort(sortBy, sortDirection)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray()
 
         const totalCount = await commentsCollection
-            .countDocuments({postId: postId})
+            .countDocuments({id:postId})
 
         const pagesCount = Math.ceil(totalCount / pageSize)
 
@@ -54,9 +54,8 @@ export class CommentsRepository {
     static async getCommentById(id: any): Promise<OutputPostType | null> {
         try {
             console.log(id, 'id')
-            const comment: any = await commentsCollection.findOne({
-                id:
-                // new ObjectId(
+            const comment: any = await commentsCollection.findOne({id:
+                    // new ObjectId(
                 id
                 // )
             })
@@ -79,7 +78,7 @@ export class CommentsRepository {
         const commentId = new ObjectId()
 
         const newComment: any = {
-            postId:postId,
+            id: postId,
             content,
             commentatorInfo: {
                 userId: id,
@@ -87,21 +86,19 @@ export class CommentsRepository {
             },
             createdAt: new Date().toISOString()
         }
-        const comment = await commentsCollection.insertOne({...newComment})
+        const comment = await commentsCollection.insertOne(newComment)
 
         if (comment) {
             const result: any = await commentsCollection.findOne({id: postId})
-            // return {
-            //     id: result!.id,
-            //     content: result!.content,
-            //     commentatorInfo: {
-            //         userId: result.commentatorInfo.userId,
-            //         userLogin: result.commentatorInfo.userLogin,
-            //     },
-            //     createdAt: result!.createdAt,
-            // }
-
-            return commentsMapper({id: comment.insertedId, ...newComment})
+            return {
+                id: result!.id,
+                content: result!.content,
+                commentatorInfo: {
+                    userId: result.commentatorInfo.userId,
+                    userLogin: result.commentatorInfo.userLogin,
+                },
+                createdAt: result!.createdAt,
+            }
 
         } else {
             return null
@@ -111,9 +108,8 @@ export class CommentsRepository {
 
     static async updateComment(id: string, content: any,) {
 
-        let result = await commentsCollection.updateOne({
-            id:
-            // new ObjectId(
+        let result = await commentsCollection.updateOne({id:
+                // new ObjectId(
             id
             // )
         }, {
@@ -129,11 +125,10 @@ export class CommentsRepository {
 
         try {
 
-            const result = await commentsCollection.deleteOne({
-                id:
-                // new ObjectId(
-                id
-                // )
+            const result = await commentsCollection.deleteOne({id:
+                    // new ObjectId(
+                        id
+                    // )
             })
             return result.deletedCount === 1
 
