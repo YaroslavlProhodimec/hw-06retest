@@ -86,7 +86,7 @@ export class CommentsRepository {
             },
             createdAt: new Date().toISOString()
         }
-        const comment = await commentsCollection.insertOne(newComment)
+        const comment = await commentsCollection.insertOne({...newComment})
 
         if (comment) {
             const result: any = await commentsCollection.findOne({id: postId})
