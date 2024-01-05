@@ -89,7 +89,7 @@ export class CommentsRepository {
         const comment = await commentsCollection.insertOne(newComment)
 
         if (comment) {
-            const result: any = await commentsCollection.findOne({id: postId})
+            const result: any = await commentsCollection.findOne({id: comment.insertedId})
             return {
                 id: comment.insertedId,
                 content: result!.content,
