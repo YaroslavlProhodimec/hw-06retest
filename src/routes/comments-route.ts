@@ -32,10 +32,10 @@ commentsRoute.put('/:id',
         const id = req.params.id
         const comment: any = await CommentsRepository.getCommentById(id)
         console.log(comment,'comment')
-        // if (!comment) {
-        //     res.sendStatus(404)
-        //     return;
-        // }
+        if (!comment) {
+            res.sendStatus(404)
+            return;
+        }
 
         if (comment.commentatorInfo.userId.toString() !== user._id.toString()) {
             res.sendStatus(403)
