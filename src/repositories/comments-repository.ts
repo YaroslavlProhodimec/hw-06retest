@@ -29,14 +29,14 @@ export class CommentsRepository {
         // }
         // const filter = {id: id}
 
-        const comments: any = await commentsCollection.find({id: postId})
+        const comments: any = await commentsCollection.find({postId: postId})
             .sort(sortBy, sortDirection)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray()
 
         const totalCount = await commentsCollection
-            .countDocuments({id:postId})
+            .countDocuments({postId:postId})
 
         const pagesCount = Math.ceil(totalCount / pageSize)
 
@@ -78,7 +78,8 @@ export class CommentsRepository {
         // const commentId = new ObjectId()
 
         const newComment: any = {
-            id: postId,
+            // id: postId,
+            postId:postId,
             content,
             commentatorInfo: {
                 userId: id,
@@ -89,9 +90,9 @@ export class CommentsRepository {
         const comment = await commentsCollection.insertOne(newComment)
 
         if (comment) {
-            const result: any = await commentsCollection.findOne({id: postId})
+            const result: any = await commentsCollection.findOne({_id:comment.insertedId })
             return {
-                id: result!.id,
+                id: result!._id,
                 content: result!.content,
                 commentatorInfo: {
                     userId: result.commentatorInfo.userId,
