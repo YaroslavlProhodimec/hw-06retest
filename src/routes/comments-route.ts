@@ -62,10 +62,10 @@ commentsRoute.delete('/:id',
                 // )
         })
 
-        // if (!comment) {
-        //     res.sendStatus(404)
-        //     return;
-        // }
+        if (!comment) {
+            res.sendStatus(404)
+            return;
+        }
 
         if (comment.commentatorInfo.userId.toString() !== user._id.toString()) {
             res.sendStatus(403)
