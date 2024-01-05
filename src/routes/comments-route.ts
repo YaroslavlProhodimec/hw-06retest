@@ -56,10 +56,10 @@ commentsRoute.delete('/:id',
     async (req: any, res: Response) => {
         const user = req.user
         const id = req.params.id
-        const comment: any = await commentsCollection.findOne({id:
-                // new ObjectId(
+        const comment: any = await commentsCollection.findOne({_id:
+                new ObjectId(
                     id
-                // )
+                )
         })
 
         if (!comment) {

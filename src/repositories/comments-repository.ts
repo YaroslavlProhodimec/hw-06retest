@@ -54,10 +54,10 @@ export class CommentsRepository {
     static async getCommentById(id: any): Promise<OutputPostType | null> {
         try {
             console.log(id, 'id')
-            const comment: any = await commentsCollection.findOne({id:
-                // new ObjectId(
+            const comment: any = await commentsCollection.findOne({_id:
+                 new ObjectId(
                 id
-                // )
+                 )
             })
             console.log(comment, 'comment')
             if (!comment) {
@@ -109,10 +109,10 @@ export class CommentsRepository {
 
     static async updateComment(id: string, content: any,) {
 
-        let result = await commentsCollection.updateOne({id:
-            // new ObjectId(
+        let result = await commentsCollection.updateOne({_id:
+            new ObjectId(
             id
-            // )
+            )
         }, {
             $set: {
                 content: content,
@@ -126,10 +126,10 @@ export class CommentsRepository {
 
         try {
 
-            const result = await commentsCollection.deleteOne({id:
-                // new ObjectId(
+            const result = await commentsCollection.deleteOne({_id:
+                new ObjectId(
                 id
-                // )
+                )
             })
             return result.deletedCount === 1
 
