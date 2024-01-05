@@ -53,11 +53,7 @@ export class CommentsRepository {
 
     static async getCommentById(id: any): Promise<OutputPostType | null> {
         try {
-            console.log(id, 'id')
-            const comment: any = await commentsCollection.findOne({_id:
-                 new ObjectId(
-                id
-                 )
+            const comment: any = await commentsCollection.findOne({_id: new ObjectId(id)
             })
             console.log(comment, 'comment')
             if (!comment) {
