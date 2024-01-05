@@ -75,7 +75,7 @@ export class CommentsRepository {
 
         const user: any = await usersCollection.findOne({_id: id})
 
-        // const commentId = new ObjectId()
+        const commentId = new ObjectId()
 
         const newComment: any = {
             id: postId,
