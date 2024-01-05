@@ -9,7 +9,7 @@ import {BlogRepository} from "./blog-repository";
 
 export class CommentsRepository {
     static async getAllCommentsQueryParam(sortData: any, postId: any) {
-        const sortDirection = sortData.sortDirection ?? 'desc'
+        const sortDirection = sortData.sortDirection ?? 'asc'
         const sortBy = sortData.sortBy ?? 'createdAt'
         const searchNameTerm = sortData.searchNameTerm ?? null
         const pageSize = sortData.pageSize ?? 10
