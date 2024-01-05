@@ -16,7 +16,7 @@ export class CommentsRepository {
         const pageNumber = sortData.pageNumber ?? 1
 
         let filter = {
-            id: postId
+            postId: postId
         }
 
         // if (searchNameTerm) {
@@ -29,14 +29,14 @@ export class CommentsRepository {
         // }
         // const filter = {id: id}
 
-        const comments: any = await commentsCollection.find({id: postId})
+        const comments: any = await commentsCollection.find({postId: postId})
             .sort(sortBy, sortDirection)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray()
 
         const totalCount = await commentsCollection
-            .countDocuments({id:postId})
+            .countDocuments({postId:postId})
 
         const pagesCount = Math.ceil(totalCount / pageSize)
 
@@ -78,7 +78,7 @@ export class CommentsRepository {
         const commentId = new ObjectId()
 
         const newComment: any = {
-            id: postId,
+            postId: postId,
             content,
             commentatorInfo: {
                 userId: id,
@@ -91,7 +91,7 @@ export class CommentsRepository {
         if (comment) {
             const result: any = await commentsCollection.findOne({id: postId})
             return {
-                id: result!.id,
+                id: comment.insertedId,
                 content: result!.content,
                 commentatorInfo: {
                     userId: result.commentatorInfo.userId,
@@ -99,7 +99,9 @@ export class CommentsRepository {
                 },
                 createdAt: result!.createdAt,
             }
-
+            // return {
+            //
+            // }
         } else {
             return null
         }
