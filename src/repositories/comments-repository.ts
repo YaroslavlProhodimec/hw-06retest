@@ -29,14 +29,14 @@ export class CommentsRepository {
         // }
         // const filter = {id: id}
 
-        const comments: any = await commentsCollection.find({id: postId})
+        const comments: any = await commentsCollection.find({ postId: postId })
             .sort(sortBy, sortDirection)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray()
 
         const totalCount = await commentsCollection
-            .countDocuments({id:postId})
+            .countDocuments({postId: postId})
 
         const pagesCount = Math.ceil(totalCount / pageSize)
 
@@ -54,7 +54,8 @@ export class CommentsRepository {
     static async getCommentById(id: any): Promise<OutputPostType | null> {
         try {
             console.log(id, 'id')
-            const comment: any = await commentsCollection.findOne({id:
+            const comment: any = await commentsCollection.findOne({
+                id:
                 // new ObjectId(
                 id
                 // )
@@ -75,10 +76,11 @@ export class CommentsRepository {
 
         const user: any = await usersCollection.findOne({_id: id})
 
-        // const commentId = new ObjectId()
+        const commentId = new ObjectId()
 
         const newComment: any = {
-            id: postId,
+            postId: postId,
+            id: commentId,
             content,
             commentatorInfo: {
                 userId: id,
@@ -90,7 +92,7 @@ export class CommentsRepository {
         const comment = await commentsCollection.insertOne(newComment)
 
         if (comment) {
-            const result: any = await commentsCollection.findOne({id: postId})
+            const result: any = await commentsCollection.findOne({id: commentId})
             return {
                 id: result!.id,
                 content: result!.content,
@@ -111,7 +113,8 @@ export class CommentsRepository {
 
     static async updateComment(id: string, content: any,) {
 
-        let result = await commentsCollection.updateOne({id:
+        let result = await commentsCollection.updateOne({
+            id:
             // new ObjectId(
             id
             // )
@@ -128,7 +131,8 @@ export class CommentsRepository {
 
         try {
 
-            const result = await commentsCollection.deleteOne({id:
+            const result = await commentsCollection.deleteOne({
+                id:
                 // new ObjectId(
                 id
                 // )
