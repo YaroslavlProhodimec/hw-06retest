@@ -99,7 +99,7 @@ export class CommentsRepository {
             //     },
             //     createdAt: result!.createdAt,
             // }
-            return commentsMapper({id: result.insertedId, ...newComment})
+            return commentsMapper({id: comment.insertedId, ...newComment})
 
         } else {
             return null
