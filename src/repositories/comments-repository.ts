@@ -90,18 +90,18 @@ export class CommentsRepository {
 
         if (comment) {
             const result: any = await commentsCollection.findOne({id: postId})
-            // return {
-            //     id: result!.id,
-            //     content: result!.content,
-            //     commentatorInfo: {
-            //         userId: result.commentatorInfo.userId,
-            //         userLogin: result.commentatorInfo.userLogin,
-            //     },
-            //     createdAt: result!.createdAt,
-            // }
             return {
-
+                id: result!.id,
+                content: result!.content,
+                commentatorInfo: {
+                    userId: result.commentatorInfo.userId,
+                    userLogin: result.commentatorInfo.userLogin,
+                },
+                createdAt: result!.createdAt,
             }
+            // return {
+            //
+            // }
         } else {
             return null
         }
