@@ -12,7 +12,7 @@ export class CommentsRepository {
         const sortDirection = sortData.sortDirection ?? 'desc'
         const sortBy = sortData.sortBy ?? 'createdAt'
         const searchNameTerm = sortData.searchNameTerm ?? null
-        const pageSize = Number(sortData.pageSize) ?? 10
+        const pageSize = (sortData.pageSize) ?? 10
         const pageNumber = sortData.pageNumber ?? 1
 
         let filter = {
@@ -32,7 +32,7 @@ export class CommentsRepository {
         const comments: any = await commentsCollection.find({postId: postId})
             .sort(sortBy, sortDirection)
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(+pageSize)
             .toArray()
 
         const totalCount = await commentsCollection
