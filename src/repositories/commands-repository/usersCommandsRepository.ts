@@ -1,6 +1,5 @@
 import {usersCollection} from "../../index";
 import {ObjectId, WithId} from "mongodb";
-import {UsersRepository} from "../users-repository";
 import {v4 as uuidv4} from "uuid";
 import {add} from "date-fns/add";
 import {defineFieldMongoError} from "../../utils/defineFieldMongoError";
@@ -17,6 +16,7 @@ export const usersCommandsRepository = {
                 {name: "login", unique: true}
             );
             const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
+            console.log(createdUser,'createdUser')
             const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
             console.log(foundUser)
             console.log(createdUser, 'createdUser')

@@ -105,10 +105,12 @@ export class UsersRepository {
 
         let filterLogin = {}
         let filterEmail = {}
+        console.log(searchLoginTerm,'searchLoginTerm')
+        console.log(searchEmailTerm,'searchEmailTerm')
 
         if (searchLoginTerm) {
             filterLogin = {
-                login: {
+                'accountData.login': {
                     $regex: searchLoginTerm,
                     $options: 'i'
                 }
@@ -116,19 +118,20 @@ export class UsersRepository {
         }
         if (searchEmailTerm) {
             filterEmail = {
-                email: {
+                'accountData.email': {
                     $regex: searchEmailTerm,
                     $options: 'i'
                 }
             }
         }
+
         const filter = {
             $or: [
                 filterLogin,
                 filterEmail,
             ]
         }
-
+        console.log(filter,'filter')
         const users: any = await usersCollection.findOne(filter)
             // .find(filter)
             // .sort(sortBy, sortDirection)
@@ -145,11 +148,11 @@ export class UsersRepository {
         // const totalCount = await usersCollection
         //     .countDocuments(filter)
 
-        console.log(users.passwordSalt,
+        console.log(users.accountData.passwordSalt,
             'users.passwordSalt')
         // const pageCount = Math.ceil(totalCount / +pageSize)
-        const passwordHash = await this._generateHash(authData.password, users.passwordSalt)
-        if (users.passwordHash !== passwordHash){
+        const passwordHash = await this._generateHash(authData.password, users.accountData.passwordSalt)
+        if (users.accountData.passwordHash !== passwordHash){
             return false
         }
             return users
