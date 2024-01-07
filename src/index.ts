@@ -103,10 +103,10 @@ const startApp = async () => {
     await runDb();
 
     // Создаем туннель с ngrok и получаем публичный URL
-    const ngrokUrl = await ngrok.connect(port);
+    // const ngrokUrl = await ngrok.connect(port);
 
     // Выводим публичный URL в консоль
-    console.log(`Public URL: ${ngrokUrl}`);
+    // console.log(`Public URL: ${ngrokUrl}`);
 
     // Запускаем локальный сервер
     app.listen(port, async () => {
