@@ -148,10 +148,10 @@ export class UsersRepository {
         // const totalCount = await usersCollection
         //     .countDocuments(filter)
 
-        console.log(users.accountData.passwordSalt,
+        console.log(users.accountData.passwordHash,
             'users.passwordSalt')
         // const pageCount = Math.ceil(totalCount / +pageSize)
-        const passwordHash = await this._generateHash(authData.password, users.accountData.passwordSalt)
+        const passwordHash = await this._generateHash(authData.password, users.accountData.passwordHash)
         if (users.accountData.passwordHash !== passwordHash){
             return false
         }
