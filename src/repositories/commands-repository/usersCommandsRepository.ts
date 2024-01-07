@@ -3,19 +3,33 @@ import {ObjectId, WithId} from "mongodb";
 import {UsersRepository} from "../users-repository";
 import {v4 as uuidv4} from "uuid";
 import {add} from "date-fns/add";
+import {defineFieldMongoError} from "../../utils/defineFieldMongoError";
 
 export const usersCommandsRepository = {
     async createNewUser(newUser: any) {
-        const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
-        const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
-        console.log(foundUser)
-        console.log(createdUser, 'createdUser')
-        return {
-            id: foundUser._id.toString(),
-            login: foundUser.accountData.login,
-            email: foundUser.accountData.email,
-            createdAt: foundUser.accountData.createdAt,
+        try {
+            await usersCollection.createIndex(
+                {"accountData.email": 1},
+                {name: "email", unique: true}
+            );
+            await usersCollection.createIndex(
+                {"accountData.login": 1},
+                {name: "login", unique: true}
+            );
+            const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
+            const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
+            console.log(foundUser)
+            console.log(createdUser, 'createdUser')
+            return {
+                id: foundUser._id.toString(),
+                login: foundUser.accountData.login,
+                email: foundUser.accountData.email,
+                createdAt: foundUser.accountData.createdAt,
+            }
+        } catch (e: any) {
+            return defineFieldMongoError(e.message);
         }
+
     },
 
     async updateUserIsConfirmed(_id: ObjectId) {

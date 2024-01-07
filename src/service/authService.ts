@@ -25,8 +25,9 @@ export const authService = {
         }
         const createResult = await usersCommandsRepository.createNewUser(user)
         console.log(createResult, 'createResult')
-
-        if (!createResult) {
+        if (createResult === 'login') {
+            return false
+        } else if (createResult === 'email') {
             return false
         }
         try {

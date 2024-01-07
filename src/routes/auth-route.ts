@@ -4,6 +4,8 @@ import {jwtService} from "../domain/jwt-service";
 import {bearerAuth} from "../middlewares/auth/auth-middleware";
 import {userValidation} from "../validators/users-validator";
 import {authService} from "../service/authService";
+import {confirmationCodeValidator} from "../validators/code-validator";
+import {emailValidation} from "../utils/usersUtils/emailValidator";
 
 
 export const authRouter = Router({})
@@ -13,13 +15,14 @@ authRouter.post('/registration',
     async (req: any, res: Response) => {
         const user = await authService.createUser(req.body.login, req.body.email, req.body.password)
         if (user) {
-            res.status(201).send(user)
+            res.sendStatus(204)
         } else {
             res.status(400).send({})
         }
     })
 
 authRouter.post('/registration-confirmation',
+    confirmationCodeValidator(),
     async (req: any, res: Response) => {
         const confirmCodeResult = await authService.confirmCode(req.body.code)
         if (confirmCodeResult) {
@@ -30,8 +33,8 @@ authRouter.post('/registration-confirmation',
     })
 
 
-
 authRouter.post('/registration-email-resending',
+    emailValidation(),
     async (req: any, res: Response) => {
         const confirmCodeResult = await authService.resendEmail(req.body.email)
         if (confirmCodeResult) {
