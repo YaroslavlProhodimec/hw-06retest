@@ -4,15 +4,6 @@ import smtpTransport from "nodemailer-smtp-transport";
 export const emailAdapter = {
     async sendEmail(email: string, html: string) {
         try {
-
-            // let transport = nodemailer.createTransport({
-            //     service: 'gmail',
-            //     auth: {
-            //         user:'yar.muratof@gmail.com',
-            //         pass: process.env.PASS,
-            //     }
-            // })
-
             let transport = nodemailer.createTransport(
                 smtpTransport(
                     {
