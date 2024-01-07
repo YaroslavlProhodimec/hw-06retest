@@ -5,7 +5,12 @@ import {bearerAuth} from "../middlewares/auth/auth-middleware";
 import {userValidation} from "../validators/users-validator";
 import {authService} from "../service/authService";
 import {confirmationCodeValidator} from "../validators/code-validator";
-import {emailValidation} from "../utils/usersUtils/emailValidator";
+import {emailValidation, emailValidator} from "../utils/usersUtils/emailValidator";
+import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
+import {HTTP_STATUSES} from "../utils/common";
+import {StatusCodes} from "http-status-codes";
+import {responseErrorFunction} from "../utils/common-utils/responseErrorFunction";
+import {RegistrationError} from "../utils/errors-utils/registration-errors/RegistrationError";
 
 
 export const authRouter = Router({})
@@ -14,10 +19,20 @@ authRouter.post('/registration',
     userValidation(),
     async (req: any, res: Response) => {
         const user = await authService.createUser(req.body.login, req.body.email, req.body.password)
+        if (user instanceof UserAlreadyExistsError) {
+            res.status(StatusCodes.BAD_REQUEST).send(responseErrorFunction([user]))
+            return
+        }
+        if (user instanceof RegistrationError) {
+            res.status(StatusCodes.BAD_REQUEST).send(responseErrorFunction([user]))
+            return
+        }
         if (user) {
-            res.sendStatus(204)
+            res.sendStatus(StatusCodes.NO_CONTENT);
+            return
         } else {
             res.status(400).send({})
+            return
         }
     })
 

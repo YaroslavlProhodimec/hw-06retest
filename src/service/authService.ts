@@ -5,6 +5,8 @@ import {add} from 'date-fns/add'
 import {emailManager} from "../managers/email-manager";
 import {usersCommandsRepository} from "../repositories/commands-repository/usersCommandsRepository";
 import {usersCollection} from "../index";
+import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
+import {RegistrationError} from "../utils/errors-utils/registration-errors/RegistrationError";
 
 export const authService = {
     async createUser(login: string, email: string, password: string) {
@@ -23,20 +25,27 @@ export const authService = {
                 isConfirmed: false
             }
         }
-        const createResult = await usersCommandsRepository.createNewUser(user)
-        console.log(createResult, 'createResult')
-        if (createResult === 'login') {
-            return false
-        } else if (createResult === 'email') {
-            return false
+        const createUser = await usersCommandsRepository.createNewUser(user)
+        console.log(createUser, 'createUser')
+        if (createUser === "login") {
+            return new UserAlreadyExistsError(
+                createUser,
+                "User with the given login already exists"
+            );
+        } else if (createUser === "email") {
+            return new UserAlreadyExistsError(
+                createUser,
+                "User with the given email already exists"
+            );
         }
         try {
             await emailManager.sendEmail(user)
         } catch (e) {
             await usersCollection.deleteOne(user._id)
-            return null
+            return new RegistrationError();
+
         }
-        return createResult
+        return createUser
 
     },
     async confirmCode(code: string) {
