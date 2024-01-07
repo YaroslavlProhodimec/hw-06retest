@@ -9,6 +9,7 @@ import {MongoClient} from "mongodb";
 import {authRouter} from "./routes/auth-route";
 import {usersRouter} from "./routes/users-route";
 import {commentsRoute} from "./routes/comments-route";
+import {emailRouter} from "./routes/email-router";
 
 // app.use('/testing',testingRouter)
 
@@ -34,6 +35,7 @@ app.use('/testing', testingRouter)
 app.use('/auth', authRouter)
 app.use('/users', usersRouter)
 app.use('/comments', commentsRoute)
+app.use('/', emailRouter)
 
 export const dbBlogs = client.db('node-blogs')
 
