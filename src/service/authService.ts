@@ -92,7 +92,7 @@ export const authService = {
             return new EmailAlreadyConfirmedError();
         }
         if (foundedUser?.emailConfirmation.isConfirmed) {
-            return new UserIsConfirmedError();
+            return new EmailAlreadyConfirmedError();
         }
 
         const resendEmailResult = await emailManager.resendEmailWithCode(foundedUser)
