@@ -11,6 +11,14 @@ import {HTTP_STATUSES} from "../utils/common";
 import {StatusCodes} from "http-status-codes";
 import {responseErrorFunction} from "../utils/common-utils/responseErrorFunction";
 import {RegistrationError} from "../utils/errors-utils/registration-errors/RegistrationError";
+import {UpdateUserError} from "../utils/errors-utils/registration-confirmation-errors/UpdateUserError";
+import {
+    ConfirmationCodeExpiredError
+} from "../utils/errors-utils/registration-confirmation-errors/ConfirmationCodeExpiredError";
+import {UserIsConfirmedError} from "../utils/errors-utils/registration-confirmation-errors/UserIsConfirmedError";
+import {
+    IncorrectConfirmationCodeError
+} from "../utils/errors-utils/registration-confirmation-errors/IncorrectConfirmationCodeError";
 
 
 export const authRouter = Router({})
@@ -40,10 +48,24 @@ authRouter.post('/registration-confirmation',
     confirmationCodeValidator(),
     async (req: any, res: Response) => {
         const confirmCodeResult = await authService.confirmCode(req.body.code)
+        if (
+            confirmCodeResult instanceof IncorrectConfirmationCodeError ||
+            confirmCodeResult instanceof UserIsConfirmedError ||
+            confirmCodeResult instanceof ConfirmationCodeExpiredError
+        ) {
+            res
+                .status(StatusCodes.BAD_REQUEST)
+                .send(responseErrorFunction([confirmCodeResult]));
+            return;
+        }
+        if (confirmCodeResult instanceof UpdateUserError) {
+            res
+                .status(StatusCodes.INTERNAL_SERVER_ERROR)
+                .send(responseErrorFunction([confirmCodeResult]));
+            return;
+        }
         if (confirmCodeResult) {
             res.sendStatus(204)
-        } else {
-            res.status(400).send({})
         }
     })
 

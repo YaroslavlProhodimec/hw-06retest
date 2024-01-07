@@ -7,6 +7,14 @@ import {usersCommandsRepository} from "../repositories/commands-repository/users
 import {usersCollection} from "../index";
 import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
 import {RegistrationError} from "../utils/errors-utils/registration-errors/RegistrationError";
+import {
+    IncorrectConfirmationCodeError
+} from "../utils/errors-utils/registration-confirmation-errors/IncorrectConfirmationCodeError";
+import {UserIsConfirmedError} from "../utils/errors-utils/registration-confirmation-errors/UserIsConfirmedError";
+import {UpdateUserError} from "../utils/errors-utils/registration-confirmation-errors/UpdateUserError";
+import {
+    ConfirmationCodeExpiredError
+} from "../utils/errors-utils/registration-confirmation-errors/ConfirmationCodeExpiredError";
 
 export const authService = {
     async createUser(login: string, email: string, password: string) {
@@ -52,19 +60,19 @@ export const authService = {
         console.log(code, 'code')
         const foundedUser = await usersCollection.findOne({'emailConfirmation.confirmationCode': code})
         if (!foundedUser || foundedUser?.emailConfirmation.confirmationCode !== code) {
-            return false
+            return new IncorrectConfirmationCodeError();
         }
         if (foundedUser?.emailConfirmation.isConfirmed) {
-            return false
+            return new UserIsConfirmedError();
         }
         if (!foundedUser && foundedUser?.emailConfirmation.expirationDate < new Date().toISOString()) {
-            return false
+            return new ConfirmationCodeExpiredError();
         } else {
             console.log(foundedUser, 'foundedUser')
             console.log(foundedUser._id, 'foundedUser._id')
             const updateIsConfirmedUser = await usersCommandsRepository.updateUserIsConfirmed(foundedUser._id);
             if (!updateIsConfirmedUser) {
-                return false
+                return new UpdateUserError("registration-confirmation");
             }
             return foundedUser.accountData.login
         }
