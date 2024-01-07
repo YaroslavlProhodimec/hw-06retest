@@ -15,6 +15,8 @@ import {UpdateUserError} from "../utils/errors-utils/registration-confirmation-e
 import {
     ConfirmationCodeExpiredError
 } from "../utils/errors-utils/registration-confirmation-errors/ConfirmationCodeExpiredError";
+import {WrongEmailError} from "../utils/errors-utils/resend-email-errors/WrongEmailError";
+import {EmailAlreadyConfirmedError} from "../utils/errors-utils/resend-email-errors/EmailAlreadyConfirmedError";
 
 export const authService = {
     async createUser(login: string, email: string, password: string) {
@@ -87,17 +89,17 @@ export const authService = {
         console.log(foundedUser, 'foundedUser resendEmail')
 
         if (!foundedUser) {
-            return false
+            return new EmailAlreadyConfirmedError();
         }
         if (foundedUser?.emailConfirmation.isConfirmed) {
-            return false
+            return new UserIsConfirmedError();
         }
-        try {
-            await emailManager.resendEmailWithCode(foundedUser)
-        } catch (e) {
-            return false
+
+        const resendEmailResult = await emailManager.resendEmailWithCode(foundedUser)
+        if (!resendEmailResult) {
+            return new UpdateUserError("registration-email-resending");
         }
-        return foundedUser
+        return foundedUser.accountData.email;
 
     },
     async _generateHash(password: any,) {

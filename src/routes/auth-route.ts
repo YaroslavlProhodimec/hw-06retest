@@ -19,6 +19,8 @@ import {UserIsConfirmedError} from "../utils/errors-utils/registration-confirmat
 import {
     IncorrectConfirmationCodeError
 } from "../utils/errors-utils/registration-confirmation-errors/IncorrectConfirmationCodeError";
+import {WrongEmailError} from "../utils/errors-utils/resend-email-errors/WrongEmailError";
+import {EmailAlreadyConfirmedError} from "../utils/errors-utils/resend-email-errors/EmailAlreadyConfirmedError";
 
 
 export const authRouter = Router({})
@@ -73,12 +75,23 @@ authRouter.post('/registration-confirmation',
 authRouter.post('/registration-email-resending',
     emailValidation(),
     async (req: any, res: Response) => {
-        const confirmCodeResult = await authService.resendEmail(req.body.email)
-        if (confirmCodeResult) {
-            res.sendStatus(204)
-        } else {
-            res.status(400).send({})
+        const resendEmailResult = await authService.resendEmail(req.body.email)
+        if (
+            resendEmailResult instanceof WrongEmailError ||
+            resendEmailResult instanceof EmailAlreadyConfirmedError
+        ) {
+            res
+                .status(StatusCodes.BAD_REQUEST)
+                .send(responseErrorFunction([resendEmailResult]));
+            return;
         }
+        if (resendEmailResult instanceof UpdateUserError) {
+            res
+                .status(StatusCodes.INTERNAL_SERVER_ERROR)
+                .send(responseErrorFunction([resendEmailResult]));
+            return;
+        }
+        res.sendStatus(StatusCodes.NO_CONTENT);
     })
 
 authRouter.post('/login',
