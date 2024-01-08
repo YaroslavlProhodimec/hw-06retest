@@ -5,6 +5,8 @@ import {bearerAuth} from "../middlewares/auth/auth-middleware";
 import {commentsValidation} from "../validators/comments-validator";
 import {commentsCollection} from "../index";
 import {ObjectId} from "mongodb";
+import {forbiddenResponseMiddleware} from "../middlewares/forbiddenResponseMiddleware";
+import {validateObjectIdMiddleware} from "../middlewares/validateObjectIdMiddleware";
 
 
 export const commentsRoute = Router({})
@@ -24,7 +26,10 @@ commentsRoute.get('/:id',
 
 commentsRoute.put('/:id',
     bearerAuth,
+    validateObjectIdMiddleware,
+    forbiddenResponseMiddleware,
     commentsValidation(),
+
     async (req: any, res: Response) => {
 
         const content = req.body.content
