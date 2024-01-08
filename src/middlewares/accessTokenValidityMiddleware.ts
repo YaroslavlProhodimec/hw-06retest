@@ -14,9 +14,9 @@ export const accessTokenValidityMiddleware = async (
   }
 
   const token = accessTokenValue.split(" ")[1];
-  const accessTokenJWTPayloadResult = await jwtService.getJwtPayloadResult(
+  const accessTokenJWTPayloadResult = await jwtService.getUserIdByToken(
     token,
-    process.env.ACCESS_TOKEN_SECRET as string
+    // process.env.ACCESS_TOKEN_SECRET as string
   );
   if (!accessTokenJWTPayloadResult) {
     res.sendStatus(StatusCodes.UNAUTHORIZED);
