@@ -76,6 +76,7 @@ authRouter.post('/registration-email-resending',
     emailValidation(),
     async (req: any, res: Response) => {
         const resendEmailResult = await authService.resendEmail(req.body.email)
+        console.log(resendEmailResult,'resendEmailResult')
         if (
             resendEmailResult instanceof WrongEmailError ||
             resendEmailResult instanceof EmailAlreadyConfirmedError

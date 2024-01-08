@@ -58,6 +58,7 @@ export const authService = {
         return createUser
 
     },
+
     async confirmCode(code: string) {
         console.log(code, 'code')
         const foundedUser = await usersCollection.findOne({'emailConfirmation.confirmationCode': code})
@@ -67,7 +68,8 @@ export const authService = {
         if (foundedUser?.emailConfirmation.isConfirmed) {
             return new UserIsConfirmedError();
         }
-        if (!foundedUser && foundedUser?.emailConfirmation.expirationDate < new Date().toISOString()) {
+        if (foundedUser?.emailConfirmation.expirationDate &&
+            foundedUser.emailConfirmation.expirationDate < new Date().toISOString()) {
             return new ConfirmationCodeExpiredError();
         } else {
             console.log(foundedUser, 'foundedUser')
@@ -79,7 +81,6 @@ export const authService = {
             return foundedUser.accountData.login
         }
 
-
     },
 
     async resendEmail(email: string) {
@@ -89,7 +90,7 @@ export const authService = {
         console.log(foundedUser, 'foundedUser resendEmail')
 
         if (!foundedUser) {
-            return new EmailAlreadyConfirmedError();
+            return new WrongEmailError();
         }
         if (foundedUser?.emailConfirmation.isConfirmed) {
             return new EmailAlreadyConfirmedError();
