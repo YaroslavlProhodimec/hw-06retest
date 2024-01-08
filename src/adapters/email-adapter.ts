@@ -1,45 +1,45 @@
-import nodemailer from "nodemailer";
 import smtpTransport from "nodemailer-smtp-transport";
+import nodemailer from "nodemailer";
+import { UserDBType } from "../dto/usersDTO/usersDTO";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+const emailSender = process.env.AUTH_EMAIL;
+const appPassword = process.env.AUTH_PASSWORD;
 
 export const emailAdapter = {
-    async sendEmail(email: string, html: string) {
-        try {
-            let transport = nodemailer.createTransport(
-                smtpTransport(
-                    {
-                        service: "gmail",
-                        auth: {
-                            user: process.env.MAIL,
-                            pass: process.env.PASS,
-                        },
-                    })
-            );
-
-            transport.verify((error, success) => {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log("Ready for messages");
-                    console.log(success);
-                }
-            });
-            let info = await transport.sendMail(
-                    {
-                        from: 'Tarantino',
-                        to: email,
-                        subject: "Email confirmation code",
-                        html: html
-                    }
-                )
-            console.log(info, 'info')
-
-        } catch (e) {
-            console.log(e, 'error final grande')
+  async sendEmail(email: string, html: string) {
+    try {
+      let transport = nodemailer.createTransport(
+        smtpTransport({
+          service: "gmail",
+          auth: {
+            user: emailSender,
+            pass: appPassword,
+          },
+        })
+      );
+      let mailOptions = {
+        from: "Tarantino",
+        to: email,
+        subject: "Email confirmation code",
+        html,
+      };
+      transport.verify((error, success) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Ready for messages");
+          console.log(success);
         }
-        // res.send({
-        //     'email': req.body.email,
-        //     'message': req.body.message,
-        //     'subject': req.body.subject
-        // })
+      });
+
+      transport.sendMail(mailOptions);
+      console.log("Email sent successfully");
+    } catch (error) {
+      console.log("Email not sent");
+      console.log(error);
     }
-}
+  },
+  async sendConfirmationEmail(user: UserDBType) {},
+};

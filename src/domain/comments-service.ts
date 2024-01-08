@@ -1,4 +1,4 @@
-import {commentsCommandsRepository} from "../repositories/commands-repository/commentsCommandsRepository";
+import { commentsCommandsRepository } from "../repositories/commands-repository/commentsCommandsRepository";
 
 export const commentsService = {
   async deleteCommentById(commentId: string): Promise<boolean> {

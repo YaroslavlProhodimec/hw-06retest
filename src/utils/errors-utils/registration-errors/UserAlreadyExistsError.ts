@@ -8,7 +8,6 @@ export class UserAlreadyExistsError extends CommonErrorResponse {
     this.field = field;
     this.message = message;
   }
-
   getResult() {
     return super.getErrorObject(this.message, this.field);
   }

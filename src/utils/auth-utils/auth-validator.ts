@@ -1,8 +1,6 @@
-import {stringInputValidatorCommon} from "../../validators/code-validator";
-import {inputModelValidation} from "../../middlewares/input-model-validation/input-model-validation";
+import { stringInputValidatorCommon } from "../common-utils/validatorForStrings";
 
-export const authValidator=() => [
+export const authValidator = [
   stringInputValidatorCommon("loginOrEmail"),
   stringInputValidatorCommon("password"),
-    inputModelValidation
 ];

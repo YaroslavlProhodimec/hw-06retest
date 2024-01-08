@@ -1,69 +1,76 @@
-import {usersCollection} from "../../index";
-import {ObjectId, WithId} from "mongodb";
-import {v4 as uuidv4} from "uuid";
-import {add} from "date-fns/add";
-import {defineFieldMongoError} from "../../utils/defineFieldMongoError";
-import {usersMapper} from "../../types/users/mapper";
+import { MongoServerError, ObjectId, WithId } from "mongodb";
+import { usersCollection } from "../../db";
+import { UserDBType, UserViewModel } from "../../dto/usersDTO/usersDTO";
+import { transformUsersResponse } from "../../utils/usersUtils/transformUsersResponse";
+import { defineFieldMongoError } from "../../utils/errors-utils/defineFieldMongoError";
+import { UserNotRegisteredField } from "../../dto/common/MongoErrorTypes";
 
 export const usersCommandsRepository = {
-    async createNewUser(newUser: any) {
-        try {
-            await usersCollection.createIndex(
-                {"accountData.email": 1},
-                {name: "email", unique: true}
-            );
-            await usersCollection.createIndex(
-                {"accountData.login": 1},
-                {name: "login", unique: true}
-            );
-            const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
-            console.log(createdUser, 'createdUser')
-            const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
-
-             return usersMapper(foundUser)
-            // {
-            //     id: foundUser._id.toString(),
-            //     login: foundUser.accountData.login,
-            //     email: foundUser.accountData.email,
-            //     createdAt: foundUser.accountData.createdAt,
-            // }
-        } catch (e: any) {
-            return defineFieldMongoError(e.message);
-        }
-
-    },
-    async findUserById(id: string): Promise<WithId<any> | null> {
-        const foundUser = await usersCollection.findOne({_id: new ObjectId(id)});
-        return foundUser;
-    },
-    async updateUserIsConfirmed(_id: ObjectId) {
-
-        const updateIsUserConfirmed = await usersCollection.updateOne({_id}, {
-            $set: {
-                'emailConfirmation.isConfirmed': true,
-                'emailConfirmation.expirationDate': null,
-                'emailConfirmation.confirmationCode': null
-            }
-        })
-        console.log(updateIsUserConfirmed, 'updateIsUserConfirmed')
-        return updateIsUserConfirmed.modifiedCount === 1;
-
-    },
-    async updateUserCodeAndExpirationDate(_id: ObjectId,
-                                          code: string,
-                                          expirationDate: string) {
-        const findUser = usersCommandsRepository.findUserById(_id.toString());
-        if (!findUser) return false;
-        const updateIsUserConfirmed = await usersCollection.updateMany(
-            {_id},
-            {
-                $set: {
-                    "emailConfirmation.confirmationCode": code,
-                    "emailConfirmation.expirationDate": expirationDate,
-                },
-            }
-        );
-        return updateIsUserConfirmed.modifiedCount === 1;
-
+  async createNewUser(
+    newUser: UserDBType
+  ): Promise<UserViewModel | UserNotRegisteredField> {
+    try {
+      await usersCollection.createIndex(
+        { "accountData.email": 1 },
+        { name: "email", unique: true }
+      );
+      await usersCollection.createIndex(
+        { "accountData.login": 1 },
+        { name: "login", unique: true }
+      );
+      const createdUser = await usersCollection.insertOne(newUser);
+      const newUserFound = await this.findUserById(
+        createdUser.insertedId.toString()
+      );
+      return transformUsersResponse(newUserFound!);
+    } catch (err) {
+      const error = err as MongoServerError;
+      return defineFieldMongoError(error.message);
     }
-}
+  },
+  async findUserById(id: string): Promise<WithId<UserDBType> | null> {
+    const foundUser = await usersCollection.findOne({ _id: new ObjectId(id) });
+    return foundUser;
+  },
+  async deleteUser(id: string): Promise<boolean> {
+    const user = await this.findUserById(id);
+    if (!user) return false;
+
+    const deleteResult = await usersCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+    return deleteResult.deletedCount === 1;
+  },
+
+  async updateUserIsConfirmed(_id: ObjectId): Promise<boolean> {
+    const updateIsUserConfirmed = await usersCollection.updateOne(
+      { _id },
+      {
+        $set: {
+          "emailConfirmation.isConfirmed": true,
+          "emailConfirmation.confirmationCode": null,
+          "emailConfirmation.expirationDate": null,
+        },
+      }
+    );
+    return updateIsUserConfirmed.modifiedCount === 1;
+  },
+  async updateUserCodeAndExpirationDate(
+    _id: ObjectId,
+    code: string,
+    expirationDate: string
+  ): Promise<boolean> {
+    const findUser = usersCommandsRepository.findUserById(_id.toString());
+    if (!findUser) return false;
+    const updateIsUserConfirmed = await usersCollection.updateMany(
+      { _id },
+      {
+        $set: {
+          "emailConfirmation.confirmationCode": code,
+          "emailConfirmation.expirationDate": expirationDate,
+        },
+      }
+    );
+    return updateIsUserConfirmed.modifiedCount === 1;
+  },
+};
