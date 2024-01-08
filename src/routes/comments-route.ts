@@ -63,6 +63,7 @@ commentsRoute.delete(
     forbiddenResponseMiddleware,
     deleteComment
 );
+
 //
 // commentsRoute.delete('/:id',
 //     bearerAuth,
