@@ -16,7 +16,7 @@ export const usersCommandsRepository = {
                 {name: "login", unique: true}
             );
             const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
-            console.log(createdUser,'createdUser')
+            console.log(createdUser, 'createdUser')
             const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
             console.log(foundUser)
             console.log(createdUser, 'createdUser')
@@ -31,7 +31,10 @@ export const usersCommandsRepository = {
         }
 
     },
-
+    async findUserById(id: string): Promise<WithId<any> | null> {
+        const foundUser = await usersCollection.findOne({_id: new ObjectId(id)});
+        return foundUser;
+    },
     async updateUserIsConfirmed(_id: ObjectId) {
 
         const updateIsUserConfirmed = await usersCollection.updateOne({_id}, {
@@ -45,15 +48,20 @@ export const usersCommandsRepository = {
         return updateIsUserConfirmed.modifiedCount === 1;
 
     },
-    async updateUserCodeAndExpirationDate(_id: ObjectId) {
-
-        const updateIsUserConfirmed = await usersCollection.updateMany({_id}, {
-            $set: {
-                'emailConfirmation.confirmationCode': uuidv4(),
-                'emailConfirmation.expirationDate': add(new Date(), {hours: 3, minutes: 3}),
+    async updateUserCodeAndExpirationDate(_id: ObjectId,
+                                          code: string,
+                                          expirationDate: string) {
+        const findUser = usersCommandsRepository.findUserById(_id.toString());
+        if (!findUser) return false;
+        const updateIsUserConfirmed = await usersCollection.updateMany(
+            {_id},
+            {
+                $set: {
+                    "emailConfirmation.confirmationCode": code,
+                    "emailConfirmation.expirationDate": expirationDate,
+                },
             }
-        })
-        console.log(updateIsUserConfirmed, 'updateIsUserConfirmed')
+        );
         return updateIsUserConfirmed.modifiedCount === 1;
 
     }

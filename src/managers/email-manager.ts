@@ -1,7 +1,8 @@
 import {htmlEmailConfirmationCodeLetter} from "../utils/html-email";
 import {emailAdapter} from "../adapters/email-adapter";
 import {usersCommandsRepository} from "../repositories/commands-repository/usersCommandsRepository";
-import {usersCollection} from "../index";
+import {createCodeExpirationDate} from "../utils/auth-utils/create-code-expiration-date";
+import {createConfirmationCode} from "../utils/auth-utils/create-user-confirmation-code";
 
 export const emailManager = {
     async sendEmail(user: any) {
@@ -12,18 +13,27 @@ export const emailManager = {
         await emailAdapter.sendEmail(user.accountData.email, html);
     },
     async resendEmailWithCode(user: any) {
-        const updatedUser = usersCommandsRepository.updateUserCodeAndExpirationDate(user._id)
+        const newCode = createConfirmationCode();
+        const newExpirationDate = createCodeExpirationDate();
+
+        const updatedUser =
+            await usersCommandsRepository.updateUserCodeAndExpirationDate(
+                user._id,
+                newCode,
+                newExpirationDate
+            );
         if (!updatedUser) {
-            return false
-        }
-        const foundUser = await usersCollection.findOne({_id: user._id});
-        if (!foundUser) {
-            return false
-        }
-        const html = htmlEmailConfirmationCodeLetter(foundUser.emailConfirmation.confirmationCode);
-        await emailAdapter.sendEmail(foundUser.accountData.email, html);
+            return false;
+        } else {
+            const foundUpdatedUser = await usersCommandsRepository.findUserById(
+                user._id.toString()
+            );
+            if (!foundUpdatedUser) return false;
+        const html = htmlEmailConfirmationCodeLetter(foundUpdatedUser.emailConfirmation.confirmationCode);
+        await emailAdapter.sendEmail(foundUpdatedUser.accountData.email, html);
 
         return true;
 
     }
+}
 }
