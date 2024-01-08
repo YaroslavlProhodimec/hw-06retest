@@ -116,7 +116,6 @@ authRouter.get('/me',
     async (req: any, res: Response) => {
 
         // const user = await UsersRepository.checkCredentials({loginOrEmail, password})
-        console.log(req.user, 'req.user')
         if (req.user) {
             // const token = await jwtService.createJWT(user)
             let {_id: id, login, email} = req.user

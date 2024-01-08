@@ -32,6 +32,7 @@ commentsRoute.put('/:id',
 
     async (req: any, res: Response) => {
         const {content} = req.body;
+        console.log(content,'content')
         const updatedComment = await commentsService.updateCommentById(
             req.params.id,
             content
