@@ -3,10 +3,10 @@ import {CommentsRepository} from "../repositories/comments-repository";
 import {HTTP_STATUSES} from "../utils/common";
 import {bearerAuth} from "../middlewares/auth/auth-middleware";
 import {commentsValidation} from "../validators/comments-validator";
-import {commentsCollection} from "../index";
-import {ObjectId} from "mongodb";
 import {forbiddenResponseMiddleware} from "../middlewares/forbiddenResponseMiddleware";
 import {validateObjectIdMiddleware} from "../middlewares/validateObjectIdMiddleware";
+import {StatusCodes} from "http-status-codes";
+import {commentsService} from "../domain/comments-service";
 
 
 export const commentsRoute = Router({})
@@ -31,29 +31,16 @@ commentsRoute.put('/:id',
     commentsValidation(),
 
     async (req: any, res: Response) => {
-
-        const content = req.body.content
-        const user = req.user
-        const id = req.params.id
-        const comment: any = await CommentsRepository.getCommentById(id)
-        console.log(comment,'comment')
-        if (!comment) {
-            res.sendStatus(404)
-            return;
+        const {content} = req.body;
+        const updatedComment = await commentsService.updateCommentById(
+            req.params.id,
+            content
+        );
+        if (!updatedComment) {
+            res.sendStatus(StatusCodes.NOT_FOUND);
+        } else {
+            res.sendStatus(StatusCodes.NO_CONTENT);
         }
-
-        if (comment.commentatorInfo.userId.toString() !== user._id.toString()) {
-            res.sendStatus(403)
-            return;
-        }
-
-        const isUpdated = await CommentsRepository.updateComment(id, content,)
-        console.log(isUpdated,'isUpdated')
-        if (isUpdated) {
-            res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-            return;
-        }
-        res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     })
 
 commentsRoute.delete('/:id',
@@ -61,27 +48,12 @@ commentsRoute.delete('/:id',
     validateObjectIdMiddleware,
     forbiddenResponseMiddleware,
     async (req: any, res: Response) => {
-        const user = req.user
-        const id = req.params.id
-        const comment: any = await commentsCollection.findOne({_id:
-                new ObjectId(
-                    id
-                )
-        })
-
-        if (!comment) {
-            res.sendStatus(404)
-            return;
+        const deletedComment = commentsService.deleteCommentById(req.params.id);
+        if (!deletedComment) {
+            res.sendStatus(StatusCodes.NOT_FOUND);
+        } else {
+            res.sendStatus(StatusCodes.NO_CONTENT);
         }
-
-        if (comment.commentatorInfo.userId.toString() !== user._id.toString()) {
-            res.sendStatus(403)
-            return;
-        }
-        let idDeleted = await CommentsRepository.deleteComment(req.params.id)
-
-        if (idDeleted) res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-        else res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     })
 
 
