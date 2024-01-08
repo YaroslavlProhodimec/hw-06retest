@@ -14,7 +14,7 @@ export const forbiddenResponseMiddleware = async (
 
   if (!comment) {
     res.sendStatus(StatusCodes.NOT_FOUND);
-  } else if (comment && comment.commentatorInfo.userId !== req.user.userId) {
+  } else if (comment && comment.commentatorInfo.userId !== req.userId) {
     res.sendStatus(StatusCodes.FORBIDDEN);
   } else {
     next();
