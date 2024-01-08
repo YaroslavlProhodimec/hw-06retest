@@ -58,6 +58,8 @@ commentsRoute.put('/:id',
 
 commentsRoute.delete('/:id',
     bearerAuth,
+    validateObjectIdMiddleware,
+    forbiddenResponseMiddleware,
     async (req: any, res: Response) => {
         const user = req.user
         const id = req.params.id
