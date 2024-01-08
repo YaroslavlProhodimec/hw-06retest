@@ -20,6 +20,7 @@ import {
 } from "../utils/errors-utils/registration-confirmation-errors/IncorrectConfirmationCodeError";
 import {WrongEmailError} from "../utils/errors-utils/resend-email-errors/WrongEmailError";
 import {EmailAlreadyConfirmedError} from "../utils/errors-utils/resend-email-errors/EmailAlreadyConfirmedError";
+import {authValidator} from "../utils/auth-utils/auth-validator";
 
 
 export const authRouter = Router({})
@@ -95,6 +96,7 @@ authRouter.post('/registration-email-resending',
     })
 
 authRouter.post('/login',
+    authValidator(),
     async (req: Request, res: Response) => {
 
         let {loginOrEmail, password} = req.body

@@ -3,6 +3,8 @@ import {usersCollection} from "../index";
 import bcrypt from 'bcrypt'
 import {BlogType} from "../types/blog/output";
 import {usersMapper} from "../types/users/mapper";
+import {usersCommandsRepository} from "./commands-repository/usersCommandsRepository";
+import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
 
 export class UsersRepository {
     static async getAllUsers(sortData: any) {
@@ -63,26 +65,59 @@ export class UsersRepository {
         }
 
     }
-    static async createUser(login: any, email: any, password: any) {
+
+    static async createUser(login: any, email: any,
+                            password: any,
+                            confirmationCode: string | null,
+                            isConfirmed: boolean,
+                            expirationDate: string | null) {
 
         const passwordSalt = await bcrypt.genSalt(10)
         const passwordHash = await this._generateHash(password, passwordSalt)
-        console.log(passwordSalt,'passwordSalt')
-        console.log(passwordHash,'passwordHash')
+        console.log(passwordSalt, 'passwordSalt')
+        console.log(passwordHash, 'passwordHash')
+        // const newUser = {
+        //     _id: new ObjectId(),
+        //     login:login,
+        //     email,
+        //     passwordHash,
+        //     passwordSalt,
+        //     createdAt: new Date()
+        // }
         const newUser = {
-            _id: new ObjectId(),
-            login:login,
-            email,
-            passwordHash,
-            passwordSalt,
-            createdAt: new Date()
+            accountData: {
+                passwordSalt,
+                passwordHash,
+                login,
+                email,
+                createdAt: new Date(),
+            },
+            emailConfirmation: {
+                confirmationCode,
+                isConfirmed,
+                expirationDate,
+            },
+        };
+        const createUserResult = await usersCommandsRepository.createNewUser(newUser);
+
+        if (createUserResult === "login") {
+            return new UserAlreadyExistsError(
+                createUserResult,
+                "User with the given login already exists"
+            );
+        } else if (createUserResult === "email") {
+            return new UserAlreadyExistsError(
+                createUserResult,
+                "User with the given email already exists"
+            );
+        } else {
+            // await authService.createRefreshTokenBlacklistForUser(
+            //     new ObjectId(createUserResult.id)
+            // );
+            return createUserResult;
         }
-
-        const result = await usersCollection.insertOne(newUser)
-        const user = await usersCollection.findOne({_id: result.insertedId})
-
-        return usersMapper(user)
     }
+
     static async deleteUser(id: any) {
 
         try {
@@ -94,7 +129,7 @@ export class UsersRepository {
     }
 
     static async checkCredentials(authData: any) {
-        console.log(authData,'authData')
+        console.log(authData, 'authData')
         // const sortDirection = authData.sortDirection ?? 'desc'
         // const sortBy = authData.sortBy ?? 'createdAt'
         // const searchNameTerm = authData.searchNameTerm ?? null
@@ -105,8 +140,8 @@ export class UsersRepository {
 
         let filterLogin = {}
         let filterEmail = {}
-        console.log(searchLoginTerm,'searchLoginTerm')
-        console.log(searchEmailTerm,'searchEmailTerm')
+        console.log(searchLoginTerm, 'searchLoginTerm')
+        console.log(searchEmailTerm, 'searchEmailTerm')
 
         if (searchLoginTerm) {
             filterLogin = {
@@ -131,15 +166,15 @@ export class UsersRepository {
                 filterEmail,
             ]
         }
-        console.log(filter,'filter')
+        console.log(filter, 'filter')
         const users: any = await usersCollection.findOne(filter)
-            // .find(filter)
-            // .sort(sortBy, sortDirection)
-            // .skip((+pageNumber - 1) * +pageSize)
-            // .limit(+pageSize)
-            // .toArray()
+        // .find(filter)
+        // .sort(sortBy, sortDirection)
+        // .skip((+pageNumber - 1) * +pageSize)
+        // .limit(+pageSize)
+        // .toArray()
 
-        console.log(users,'users')
+        console.log(users, 'users')
 
         if (!users) {
             return false
@@ -152,19 +187,19 @@ export class UsersRepository {
             'users.passwordSalt')
         // const pageCount = Math.ceil(totalCount / +pageSize)
         const passwordHash = await this._generateHash(authData.password, users.accountData.passwordHash)
-        if (users.accountData.passwordHash !== passwordHash){
+        if (users.accountData.passwordHash !== passwordHash) {
             return false
         }
-            return users
+        return users
 
     }
 
 
-     static async _generateHash(password: any, salt: any) {
-         const hash = await bcrypt.hash(password, salt)
-         console.log(hash,'hash')
+    static async _generateHash(password: any, salt: any) {
+        const hash = await bcrypt.hash(password, salt)
+        console.log(hash, 'hash')
 
-         return hash
+        return hash
     }
 
 }

@@ -3,6 +3,7 @@ import {ObjectId, WithId} from "mongodb";
 import {v4 as uuidv4} from "uuid";
 import {add} from "date-fns/add";
 import {defineFieldMongoError} from "../../utils/defineFieldMongoError";
+import {usersMapper} from "../../types/users/mapper";
 
 export const usersCommandsRepository = {
     async createNewUser(newUser: any) {
@@ -18,14 +19,14 @@ export const usersCommandsRepository = {
             const createdUser: WithId<any> = await usersCollection.insertOne(newUser)
             console.log(createdUser, 'createdUser')
             const foundUser = await usersCollection.findOne({_id: new ObjectId(createdUser.insertedId.toString())});
-            console.log(foundUser)
-            console.log(createdUser, 'createdUser')
-            return {
-                id: foundUser._id.toString(),
-                login: foundUser.accountData.login,
-                email: foundUser.accountData.email,
-                createdAt: foundUser.accountData.createdAt,
-            }
+
+             return usersMapper(foundUser)
+            // {
+            //     id: foundUser._id.toString(),
+            //     login: foundUser.accountData.login,
+            //     email: foundUser.accountData.email,
+            //     createdAt: foundUser.accountData.createdAt,
+            // }
         } catch (e: any) {
             return defineFieldMongoError(e.message);
         }

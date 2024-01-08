@@ -27,7 +27,11 @@ usersRouter.post('/',
     userValidation(),
     async (req: Request, res: Response) => {
 
-        const newProduct = await UsersRepository.createUser(req.body.login, req.body.email, req.body.password)
+        const newProduct = await UsersRepository.createUser(req.body.login, req.body.email,
+            req.body.password,
+            null,
+            true,
+            null)
         // if (newBlog) {
         res.status(HTTP_STATUSES.CREATED_201).json(newProduct)
         // return;
