@@ -17,6 +17,7 @@ import {
 } from "../utils/errors-utils/registration-confirmation-errors/ConfirmationCodeExpiredError";
 import {WrongEmailError} from "../utils/errors-utils/resend-email-errors/WrongEmailError";
 import {EmailAlreadyConfirmedError} from "../utils/errors-utils/resend-email-errors/EmailAlreadyConfirmedError";
+import {usersQueryRepository} from "../repositories/query-repository/usersQueryRepository";
 
 export const authService = {
     async createUser(login: string, email: string, password: string) {
@@ -59,49 +60,42 @@ export const authService = {
 
     },
 
-    async confirmCode(code: string) {
-        console.log(code, 'code')
-        const foundedUser = await usersCollection.findOne({'emailConfirmation.confirmationCode': code})
-        if (!foundedUser || foundedUser?.emailConfirmation.confirmationCode !== code) {
+    async confirmCode(code: string): Promise<any | string> {
+        const user = await usersQueryRepository.findUserByConfirmationCode(code);
+        if (!user || user?.emailConfirmation.confirmationCode !== code) {
             return new IncorrectConfirmationCodeError();
         }
-        if (foundedUser?.emailConfirmation.isConfirmed) {
+        if (user?.emailConfirmation.isConfirmed) {
             return new UserIsConfirmedError();
         }
-        if (foundedUser?.emailConfirmation.expirationDate &&
-            foundedUser.emailConfirmation.expirationDate < new Date().toISOString()) {
+        if (
+            user?.emailConfirmation.expirationDate &&
+            user.emailConfirmation.expirationDate < new Date().toISOString()
+        )  {
             return new ConfirmationCodeExpiredError();
         } else {
-            console.log(foundedUser, 'foundedUser')
-            console.log(foundedUser._id, 'foundedUser._id')
-            const updateIsConfirmedUser = await usersCommandsRepository.updateUserIsConfirmed(foundedUser._id);
+            const updateIsConfirmedUser =
+                await usersCommandsRepository.updateUserIsConfirmed(user._id);
             if (!updateIsConfirmedUser) {
                 return new UpdateUserError("registration-confirmation");
             }
-            return foundedUser.accountData.login
+            return user.accountData.login;
         }
-
     },
 
-    async resendEmail(email: string) {
-
-        const foundedUser = await usersCollection.findOne({'accountData.email': email})
-
-        console.log(foundedUser, 'foundedUser resendEmail')
-
-        if (!foundedUser) {
+    async resendEmail(email: string): Promise<any | string> {
+        const user = await usersQueryRepository.findUserByEmail(email);
+        if (!user) {
             return new WrongEmailError();
         }
-        if (foundedUser?.emailConfirmation.isConfirmed) {
+        if (user.emailConfirmation.isConfirmed) {
             return new EmailAlreadyConfirmedError();
         }
-
-        const resendEmailResult = await emailManager.resendEmailWithCode(foundedUser)
+        const resendEmailResult = await emailManager.resendEmailWithCode(user);
         if (!resendEmailResult) {
             return new UpdateUserError("registration-email-resending");
         }
-        return foundedUser.accountData.email;
-
+        return user.accountData.email;
     },
     async _generateHash(password: any,) {
         const passwordSalt = await bcrypt.genSalt(10)

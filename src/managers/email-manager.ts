@@ -3,6 +3,7 @@ import {emailAdapter} from "../adapters/email-adapter";
 import {usersCommandsRepository} from "../repositories/commands-repository/usersCommandsRepository";
 import {createCodeExpirationDate} from "../utils/auth-utils/create-code-expiration-date";
 import {createConfirmationCode} from "../utils/auth-utils/create-user-confirmation-code";
+import {WithId} from "mongodb";
 
 export const emailManager = {
     async sendEmail(user: any) {
@@ -12,7 +13,7 @@ export const emailManager = {
         console.log(html, 'html')
         await emailAdapter.sendEmail(user.accountData.email, html);
     },
-    async resendEmailWithCode(user: any) {
+    async resendEmailWithCode(user: WithId<any>): Promise<boolean> {
         const newCode = createConfirmationCode();
         const newExpirationDate = createCodeExpirationDate();
 
@@ -22,6 +23,7 @@ export const emailManager = {
                 newCode,
                 newExpirationDate
             );
+
         if (!updatedUser) {
             return false;
         } else {
@@ -29,11 +31,13 @@ export const emailManager = {
                 user._id.toString()
             );
             if (!foundUpdatedUser) return false;
-        const html = htmlEmailConfirmationCodeLetter(foundUpdatedUser.emailConfirmation.confirmationCode);
-        await emailAdapter.sendEmail(foundUpdatedUser.accountData.email, html);
 
-        return true;
+            const html = htmlEmailConfirmationCodeLetter(
+                foundUpdatedUser.emailConfirmation.confirmationCode
+            );
 
-    }
-}
+            await emailAdapter.sendEmail(foundUpdatedUser?.accountData.email, html);
+            return true;
+        }
+    },
 }

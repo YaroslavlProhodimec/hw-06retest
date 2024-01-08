@@ -5,7 +5,7 @@ import {bearerAuth} from "../middlewares/auth/auth-middleware";
 import {userValidation} from "../validators/users-validator";
 import {authService} from "../service/authService";
 import {confirmationCodeValidator} from "../validators/code-validator";
-import {emailValidation, emailValidator} from "../utils/usersUtils/emailValidator";
+import {emailValidation} from "../utils/usersUtils/emailValidator";
 import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
 import {StatusCodes} from "http-status-codes";
 import {responseErrorFunction} from "../utils/common-utils/responseErrorFunction";
@@ -49,7 +49,7 @@ authRouter.post('/registration',
 authRouter.post('/registration-confirmation',
     confirmationCodeValidator(),
     async (req: any, res: Response) => {
-        const confirmCodeResult = await authService.confirmCode(req.body.code)
+        const confirmCodeResult = await authService.confirmCode(req.body.code);
         if (
             confirmCodeResult instanceof IncorrectConfirmationCodeError ||
             confirmCodeResult instanceof UserIsConfirmedError ||
@@ -66,17 +66,14 @@ authRouter.post('/registration-confirmation',
                 .send(responseErrorFunction([confirmCodeResult]));
             return;
         }
-        if (confirmCodeResult) {
-            res.sendStatus(204)
-        }
+        res.sendStatus(StatusCodes.NO_CONTENT);
     })
 
 
 authRouter.post('/registration-email-resending',
     emailValidation(),
     async (req: any, res: Response) => {
-        const resendEmailResult = await authService.resendEmail(req.body.email)
-        console.log(resendEmailResult,'resendEmailResult')
+        const resendEmailResult = await authService.resendEmail(req.body.email);
         if (
             resendEmailResult instanceof WrongEmailError ||
             resendEmailResult instanceof EmailAlreadyConfirmedError
@@ -93,8 +90,8 @@ authRouter.post('/registration-email-resending',
             return;
         }
         res.sendStatus(StatusCodes.NO_CONTENT);
-    })
-
+    }
+)
 authRouter.post('/login',
     authValidator(),
     async (req: Request, res: Response) => {
