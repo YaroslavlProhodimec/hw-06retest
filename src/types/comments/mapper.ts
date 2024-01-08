@@ -12,7 +12,7 @@ export const commentsMapper = (comment: any): any => {
         content: comment.content,
         commentatorInfo: {
             userId: comment.commentatorInfo.userId,
-            userLogin: comment.commentatorInfo.userLogin,
+            // userLogin: comment.commentatorInfo.userLogin,
         },
         createdAt: comment.createdAt,
     }

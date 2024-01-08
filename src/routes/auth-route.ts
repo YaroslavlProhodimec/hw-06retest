@@ -7,7 +7,6 @@ import {authService} from "../service/authService";
 import {confirmationCodeValidator} from "../validators/code-validator";
 import {emailValidation, emailValidator} from "../utils/usersUtils/emailValidator";
 import {UserAlreadyExistsError} from "../utils/errors-utils/registration-errors/UserAlreadyExistsError";
-import {HTTP_STATUSES} from "../utils/common";
 import {StatusCodes} from "http-status-codes";
 import {responseErrorFunction} from "../utils/common-utils/responseErrorFunction";
 import {RegistrationError} from "../utils/errors-utils/registration-errors/RegistrationError";
