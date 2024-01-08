@@ -10,7 +10,7 @@ export const jwtService = {
     async getUserIdByToken(token:any){
         try {
             const result:any =  jwt.verify(token,'333')
-            return  result.userId
+            return  result
         } catch (e) {
             return null
         }
