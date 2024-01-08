@@ -6,6 +6,7 @@ import {postMapper} from "../types/post/mapper";
 import {commentsMapper} from "../types/comments/mapper";
 import {UpdatePostDto} from "../types/post/input";
 import {BlogRepository} from "./blog-repository";
+import {usersCommandsRepository} from "./commands-repository/usersCommandsRepository";
 
 export class CommentsRepository {
     static async getAllCommentsQueryParam(sortData: any, postId: any) {
@@ -69,9 +70,8 @@ export class CommentsRepository {
 
         const createdAt = new Date()
 
-        const user: any = await usersCollection.findOne({_id: id})
-
-        // const commentId = new ObjectId()
+        // const user: any = await usersCollection.findOne({_id: id})
+        const foundUser = await usersCommandsRepository.findUserById(id);
 
         const newComment: any = {
             // id: postId,
@@ -79,7 +79,7 @@ export class CommentsRepository {
             content,
             commentatorInfo: {
                 userId: id,
-                userLogin: user.login,
+                userLogin: foundUser.accountData.login,
             },
             createdAt: createdAt.toISOString()
         }
@@ -90,10 +90,11 @@ export class CommentsRepository {
             return {
                 id: result!._id,
                 content: result!.content,
-                commentatorInfo: {
-                    userId: result.commentatorInfo.userId,
-                    userLogin: result.commentatorInfo.userLogin,
-                },
+                commentatorInfo: result.commentatorInfo,
+                // commentatorInfo: {
+                //     userId: result.commentatorInfo.userId,
+                //     userLogin: result.commentatorInfo.userLogin,
+                // },
                 createdAt: result!.createdAt,
             }
 
