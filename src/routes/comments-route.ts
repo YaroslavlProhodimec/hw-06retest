@@ -7,6 +7,10 @@ import {forbiddenResponseMiddleware} from "../middlewares/forbiddenResponseMiddl
 import {validateObjectIdMiddleware} from "../middlewares/validateObjectIdMiddleware";
 import {StatusCodes} from "http-status-codes";
 import {commentsService} from "../domain/comments-service";
+import {accessTokenValidityMiddleware} from "../middlewares/accessTokenValidityMiddleware";
+import {responseErrorValidationMiddleware} from "../middlewares/responseErrorValidationMiddleware";
+import {commentValidator} from "../utils/comments-utils/commentValidator";
+import {deleteComment, updateComment} from "../controllers/commentsController";
 
 
 export const commentsRoute = Router({})
@@ -23,41 +27,57 @@ commentsRoute.get('/:id',
         }
         res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     })
-
-commentsRoute.put('/:id',
-    bearerAuth,
+//
+// commentsRoute.put('/:id',
+//     bearerAuth,
+//     validateObjectIdMiddleware,
+//     forbiddenResponseMiddleware,
+//     commentsValidation(),
+//
+//     async (req: any, res: Response) => {
+//         const {content} = req.body;
+//         console.log(content,'content')
+//         const updatedComment = await commentsService.updateCommentById(
+//             req.params.id,
+//             content
+//         );
+//         if (!updatedComment) {
+//             res.sendStatus(StatusCodes.NOT_FOUND);
+//         } else {
+//             res.sendStatus(StatusCodes.NO_CONTENT);
+//         }
+//     })
+commentsRoute.put(
+    "/:id",
+    accessTokenValidityMiddleware,
     validateObjectIdMiddleware,
     forbiddenResponseMiddleware,
-    commentsValidation(),
-
-    async (req: any, res: Response) => {
-        const {content} = req.body;
-        console.log(content,'content')
-        const updatedComment = await commentsService.updateCommentById(
-            req.params.id,
-            content
-        );
-        if (!updatedComment) {
-            res.sendStatus(StatusCodes.NOT_FOUND);
-        } else {
-            res.sendStatus(StatusCodes.NO_CONTENT);
-        }
-    })
-
-commentsRoute.delete('/:id',
-    bearerAuth,
+    commentValidator,
+    responseErrorValidationMiddleware,
+    updateComment
+);
+commentsRoute.delete(
+    "/:id",
+    accessTokenValidityMiddleware,
     validateObjectIdMiddleware,
     forbiddenResponseMiddleware,
-    async (req: any, res: Response) => {
-        const deletedComment = commentsService.deleteCommentById(req.params.id);
-        if (!deletedComment) {
-            res.sendStatus(StatusCodes.NOT_FOUND);
-        } else {
-            res.sendStatus(StatusCodes.NO_CONTENT);
-        }
-    })
-
-
-
-
-
+    deleteComment
+);
+//
+// commentsRoute.delete('/:id',
+//     bearerAuth,
+//     validateObjectIdMiddleware,
+//     forbiddenResponseMiddleware,
+//     async (req: any, res: Response) => {
+//         const deletedComment = commentsService.deleteCommentById(req.params.id);
+//         if (!deletedComment) {
+//             res.sendStatus(StatusCodes.NOT_FOUND);
+//         } else {
+//             res.sendStatus(StatusCodes.NO_CONTENT);
+//         }
+//     })
+//
+//
+//
+//
+//
